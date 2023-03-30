@@ -116,27 +116,40 @@ class AuthDriverController extends Controller
             // verifier que l'email du principal ne possede pas plus de deux chauffeurs
             $chauffeur_principal = Chauffeur::where("email", $request->email_principal_driver)->first();
 
-            if($chauffeur_principal != null){
-                //dd($request->all());
-                Chauffeur::create([
-                    'name' => $request->name,
-                    'surname' => $request->surname,
-                    'email' => $request->email,
-                    'phone_number' => $request->phone_number,
-                    'matricule' => $this->getMatricule(),
-                    'password' => Hash::make($request->password),
-                    'pays' => $request->pays,
-                    'ville' => $request->ville,
-                    'principal_driver_id' => $chauffeur_principal->driver_id
-                ]);
+            $count_number_associate = Chauffeur::where("email", $request->email_principal_driver)->count();
 
-                return response()->json(
-                    [
-                        'success' => true,
-                        'code' => 201,
-                        'error' => null
-                    ]
-                );
+            if($chauffeur_principal != null){
+                if($count_number_associate == 2){
+                    return response()->json([
+                        'success'=> false,
+                        'code' => 403,
+                        'error' => null,
+                        'informations' => [
+                            "message" => "Ce chauffeur possede deja un nombre limite d'associes"
+                        ]
+                    ]);
+                } else {
+                     //dd($request->all());
+                     Chauffeur::create([
+                        'name' => $request->name,
+                        'surname' => $request->surname,
+                        'email' => $request->email,
+                        'phone_number' => $request->phone_number,
+                        'matricule' => $this->getMatricule(),
+                        'password' => Hash::make($request->password),
+                        'pays' => $request->pays,
+                        'ville' => $request->ville,
+                        'principal_driver_id' => $chauffeur_principal->driver_id
+                    ]);
+
+                    return response()->json(
+                        [
+                            'success' => true,
+                            'code' => 201,
+                            'error' => null
+                        ]
+                    );
+                }
             } else {
                 return response()->json([
                     'success'=> false,
