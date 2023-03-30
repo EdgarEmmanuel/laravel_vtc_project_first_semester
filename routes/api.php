@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthDriverController;
 use App\Http\Controllers\AuthPassengerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,4 +27,12 @@ Route::controller(AuthPassengerController::class)->group(function () {
     Route::post('v1/passenger/register', 'register');
     Route::post('logout', 'logout');
     Route::post('refresh', 'refresh');
+});
+
+
+
+Route::controller(AuthDriverController::class)->group(function () {
+    Route::post('v1/driver/login', 'login');
+    Route::post('v1/driver/register', 'register');
+    Route::post('v1/driver/refresh', 'refresh');
 });
