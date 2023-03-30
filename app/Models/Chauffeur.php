@@ -24,7 +24,8 @@ class Chauffeur extends Model
         'matricule',
         'password',
         'pays',
-        'ville'
+        'ville',
+        'principal_driver_id'
     ];
 
 

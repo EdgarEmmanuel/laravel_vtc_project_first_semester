@@ -36,16 +36,11 @@ class AuthDriverController extends Controller
         ]);
        } else {
         if(Hash::check($credentials["password"], $chauffeur->password)){
-            //dd($chauffeur);
-            $secretKey  = 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew=';
             $issuedAt   = new DateTimeImmutable();
-            $expire     = $issuedAt->modify('+40 minutes')->getTimestamp();      // Add 60 seconds
-            $serverName = "your.domain.name";
-            $username   = "username";                                           // Retrieved from filtered POST data
+            $expire     = $issuedAt->modify('+40 minutes')->getTimestamp();
 
             $data = [
                 'iat'  => $issuedAt->getTimestamp(),         // Issued at: time when the token was generated
-                'iss'  => $serverName,                       // Issuer
                 'nbf'  => $issuedAt->getTimestamp(),         // Not before
                 'exp'  => $expire,                           // Expire
                 'chauffeur' => $chauffeur,                     // User name
@@ -74,7 +69,8 @@ class AuthDriverController extends Controller
     public function register(Request $request){
         
         if($request->email_principal_driver != null){
-            return $this->registerSecondaryDriver($request);
+            
+            return $this->registerSecondaryChauffeur($request);
         } else {
             return $this->registerPrincipalChauffeur($request);
         }
@@ -116,8 +112,49 @@ class AuthDriverController extends Controller
 
 
     public function registerSecondaryChauffeur(Request $request){
-        // verifier que l'email du principal ne possede pas plus de deux chauffeurs
-        dd($request->all());
+        try{
+            // verifier que l'email du principal ne possede pas plus de deux chauffeurs
+            $chauffeur_principal = Chauffeur::where("email", $request->email_principal_driver)->first();
+
+            if($chauffeur_principal != null){
+                //dd($request->all());
+                Chauffeur::create([
+                    'name' => $request->name,
+                    'surname' => $request->surname,
+                    'email' => $request->email,
+                    'phone_number' => $request->phone_number,
+                    'matricule' => $this->getMatricule(),
+                    'password' => Hash::make($request->password),
+                    'pays' => $request->pays,
+                    'ville' => $request->ville,
+                    'principal_driver_id' => $chauffeur_principal->driver_id
+                ]);
+
+                return response()->json(
+                    [
+                        'success' => true,
+                        'code' => 201,
+                        'error' => null
+                    ]
+                );
+            } else {
+                return response()->json([
+                    'success'=> false,
+                    'code' => 403,
+                    'error' => [
+                        "message" => "aucun chaufeur avec cet email"
+                    ]
+                ]);
+            }
+        }catch(\Illuminate\Database\QueryException $e){
+            return response()->json([
+                'success'=> false,
+                'code' => 500,
+                'error' => [
+                    "message" => $e->getMessage()
+                ]
+            ]);
+        }
     }
 
 
