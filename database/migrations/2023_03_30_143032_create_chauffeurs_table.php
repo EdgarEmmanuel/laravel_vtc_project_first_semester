@@ -24,12 +24,15 @@ return new class extends Migration
             $table->string("pays");
             $table->string("ville");
 
+            
             // foreign key - chauffeur
-            $table->foreignId('principal_driver_id')->references("driver_id")->on("chauffeurs");
+            $table->unsignedBigInteger("principal_driver_id")->nullable();
+            $table->foreign('principal_driver_id')->default(null)->references("driver_id")->on("chauffeurs");
 
             // foreign key - car
-            $table->foreignId('car_id')->references("car_id")->on("voitures");
-            
+            $table->unsignedBigInteger("car_id")->nullable();
+            $table->foreign('car_id')->references("car_id")->on("voitures");
+
             $table->timestamps();
         });
     }
